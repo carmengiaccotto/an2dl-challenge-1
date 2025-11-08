@@ -59,6 +59,8 @@ Nel metodo `forward` del tuo modello, passare i valori delle feature categoriche
 Concatenare i vettori di embedding risultanti con le feature continue.
 Passare questo tensore combinato al tuo layer RNN.
 
+**Solution already implemented**
+
 ### ADVICE 08/11
 “Many the healthy, few the sick. If only to the many you listen, the faint whisper of truth never shall you hear.”
 
