@@ -83,3 +83,21 @@ criterion = nn.CrossEntropyLoss(weight=class_weights)
 ```
 **Solution already implemented**
 
+### ADVICE 09/11
+“Absolute truth, fragile it is. In blind certainty, the arrogance of overfitting lies hidden.”
+
+Your model, a perfect '1.0' chase it must not. This, rigidity it teaches. If the master says "perhaps 0.9, but 0.1 of doubt," the student (the model) to explore is forced. In this whisper of uncertainty, a stronger generalisation find, you can.
+#### Gemini's response:
+Il suggerimento del professore, "Absolute truth, fragile it is. In blind certainty, the arrogance of overfitting lies hidden", si riferisce a una tecnica di regolarizzazione chiamata Label Smoothing.
+Analisi del Suggerimento
+"Il tuo modello non deve inseguire un perfetto '1.0'": Quando addestri un modello di classificazione, di solito usi etichette "hard" (one-hot encoded). Ad esempio, per la classe `low_pain` (etichetta 1 su 3 classi), il target è `[0, 1, 0]`. Il modello viene spinto a produrre una probabilità di 1.0 per la classe corretta e 0.0 per le altre. Questa "eccessiva sicurezza" (`blind certainty`) può portare all'overfitting, rendendo il modello rigido e meno capace di generalizzare su dati nuovi.
+"Se il maestro dice 'forse 0.9, ma 0.1 di dubbio'...": Questa è la soluzione. Invece di usare un target "duro" come `[0, 1, 0]`, il Label Smoothing lo trasforma in un target "morbido". Ad esempio, con un fattore di smoothing di 0.1, il nuovo target potrebbe diventare `[0.05, 0.9, 0.05]`. La classe corretta ha ancora la probabilità più alta (0.9), ma una piccola parte della probabilità (0.1) viene distribuita uniformemente tra tutte le classi (incluse quella corretta).
+Questo costringe il modello a essere meno sicuro delle proprie previsioni, riducendo la tendenza a memorizzare il training set e migliorando la generalizzazione.
+
+```python
+# Set up loss function and optimizer with class weights and label smoothing
+# Un valore comune per label_smoothing è 0.1
+criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
+```
+**Solution already implemented**
+
