@@ -18,7 +18,8 @@ Then, follow these steps:
 
 ### **If you are in Google Colab**
 1. **You still have to manually download the data from Kaggle and upload it to your Google Drive.**
-2. the update `current_dir` variable in the first cell of the notebook to point to a folder in your Google Drive where you uploaded the data and want to work on.
+2. edit the boolean in the first cell `isColab` to `True` 
+3. the update `current_dir` variable in the first cell of the notebook to point to a folder in your Google Drive where you uploaded the data and want to work on.
 
 ### **If you are in Kaggle Notebooks**
 Currently, it does not work because there are some import issues, need to nest them inside an if
