@@ -1,8 +1,11 @@
-# **How to start**
-**ONLY THE FILE `hyperparameters_tuning_cross_validation.ipynb` HAS TO CONSIDERED UP TO DATE**
-* in all notebooks you must edit in the last cell the variable `INFERENCE_RESULTS_CSV_NAME` with the new version number
-* in all notebooks you must edit the variable called `experiment_name` to reflect the experiment you are running, it will be the name of the model saved
+# Pirate Pain Challenge - AN2DL
 
+Be careful:
+* **ONLY THE FILE `hyperparameters_tuning_cross_validation.ipynb` HAS TO CONSIDERED UP TO DATE**
+* **in all notebooks you must edit the variable called `EXPERIMENT_NAME` to reflect the experiment you are running, it will be the name of the model saved**
+
+---
+## **How to start**
 ### **If you are in a local environment**
 If you want to use the GPU (NVIDIA only):
 1. Make sure you have installed the NVIDIA drivers for your GPU
@@ -27,7 +30,7 @@ Then, follow these steps:
    1. Download the dataset
    2. create a public dataset in your profile
    3. upload the pirate pain dataset
-3. From the notebook:
+2. From the notebook:
    1. in the first cell change 'isKaggle' to True
    2. add dataset to env by clicking "Add input"
 
@@ -40,14 +43,15 @@ For example, integers that fit into int8 will be converted to that type.
 - some features may be useless:
   - joint_13 to joint_25 are all pretty much all zeros
   - joint_30 is constant to 0.5
+  - **i have removed them for now, but it might not be the best course of action**
 
 ---
 # **Ideas for further experiments:**
 - do a loop of grid searches but each time reduce the intervals around the best hyperparameters found in the previous search
 - put `WINDOW_SIZE = 160` since there are 160 samples for each second of data
 - instead of removing the useless features, try to do a PCA or some sort of embedding to reduce the dimensionality of the input data
-- low priority:
-  - try different optimizers: AdamW, RMSprop, Adagrad, Adadelta
+- **stratified** k-fold cross validation to keep the same distribution of classes in each fold
+
 ---
 # **Create a new notebook for each Network**
 To keep things organized, create a new notebook for each experiment you want to run.
@@ -127,3 +131,4 @@ Soluzione: Gradient Clipping Il "gradient clipping" è una tecnica che risolve q
 Come dice il professore, "Non la direzione, ma la magnitudine esso controlla". Questo è un punto cruciale: la tecnica non altera la direzione dell'aggiornamento, ma ne limita l'entità, prevenendo passi troppo grandi e stabilizzando l'apprendimento.
 
 **Solution already implemented**
+
