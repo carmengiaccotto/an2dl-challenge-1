@@ -6,3 +6,5 @@ seaborn
 numpy
 scikit-learn
 joblib
+# Last version of tensorboard
+tensorboard>=2.12.0
