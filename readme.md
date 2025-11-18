@@ -1,12 +1,8 @@
-# Pirate Pain Challenge - AN2DL
+# Pirate Pain Challenge - Artificia Neural Networks and Deep Learning
 
 Be careful:
-* **ONLY THE FILE `hyperparameters_tuning_cross_validation.ipynb` HAS TO CONSIDERED UP TO DATE**
+* **ONLY THE FILE `training_reduced.ipynb` HAS TO BE CONSIDERED UP TO DATE**
 * **in all notebooks you must edit the variable called `EXPERIMENT_NAME` to reflect the experiment you are running, it will be the name of the model saved**
-
-Nota nuova:
-
-* **USARE 'TRAINING.IPYNB' *fate attenzione all'importazione del dataset che è stata cambiata un po' (davide non uccidermi)* La variabile che da il nome al progetto ora è immediatamente sopra la griglia**
 
 ---
 ## **How to start**
