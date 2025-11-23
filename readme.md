@@ -1,6 +1,6 @@
 # Multivariate Time Series Classification for Pain Assessment
 # Artificial Neural Networks and Deep Learning - First Challenge
-![](an2dl-challenge-1/blob/master/images/logo.png)
+![](./images/logo.png)
 
 *Artificial Neural Network and Deep Learning* is a course offered by [Politecnico di Milano](https://www.polimi.it).
 In this repository you can find the Jupyter Notebooks that we created for the 2025 AN2DL Firts Challenge on [kaggle](https://www.kaggle.com/competitions/an2dl2526c1/overview).
@@ -11,11 +11,11 @@ The provided dataset consists of **multivariate time series data**, with each pa
 
 ### Key Characteristics
 The dataset includes:
-* **Continuous Features (Joint Angles):** 31 features related to joint angles (e.g., `joint_00` - `joint_30`) measured over time.
-* **Static Attributes (Patient Characteristics):** categorical attributes describing patient characteristics (e.g., `n_legs`, `n_hands`, `n_eyes`) and pain survey results (`pain_survey_1` - `pain_survey_4`).
+- **Continuous Features (Joint Angles):** 31 features related to joint angles (e.g., `joint_00` - `joint_30`) measured over time.
+- **Static Attributes (Patient Characteristics):** categorical attributes describing patient characteristics (e.g., `n_legs`, `n_hands`, `n_eyes`) and pain survey results (`pain_survey_1` - `pain_survey_4`).
 
 ## Task
-Predict the true pain level of each subject (**no_pain**, **low_pain**, **high_pain**) based on their time-series motion data.
+Predict the true pain level of each subject (`no_pain`, `low_pain`, `high_pain`) based on their time-series motion data.
 
 ## Main Challenge: Class Imbalance
 A primary challenge was the **severe class disparity** across the three labels. The following strategies were adopted to mitigate this risk:
