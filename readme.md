@@ -1,216 +1,55 @@
-# Pirate Pain Challenge - Artificia Neural Networks and Deep Learning
+# Multivariate Time Series Classification for Pain Assessment
+# Artificial Neural Networks and Deep Learning - First Challenge
 
-Be careful:
-* **ONLY THE FILE `training_reduced.ipynb` HAS TO BE CONSIDERED UP TO DATE**
-* **in all notebooks you must edit the variable called `EXPERIMENT_NAME` to reflect the experiment you are running, it will be the name of the model saved**
+*Artificial Neural Network and Deep Learning* is a course offered by [Politecnico di Milano](https://www.polimi.it).
+In this repository you can find the Jupyter Notebooks that we created for the 2025 AN2DL Firts Challenge on [kaggle](https://www.kaggle.com/competitions/an2dl2526c1/overview).
 
----
-## **How to start**
-### **If you are in a local environment**
-If you want to use the GPU (NVIDIA only):
-1. Make sure you have installed the NVIDIA drivers for your GPU
-2. Go to pytorch website and follow the instructions to install the right version of pytorch with CUDA support: https://pytorch.org/get-started/locally/
-3. delete from requirements.txt the line that says `torch` and `torchvision`
+## Dataset: Pirate Pain Dataset
+The provided dataset consists of **multivariate time series data**, with each patient having a sequence of **160 time steps**.
 
-Then, follow these steps:
-1. `pip install -r ./requirements.txt`
-2. Go to kaggle website, click on profile settings and create an API token. This will download a `kaggle.json` file.
-3. Place the `kaggle.json` file in the user home directory under the folder `.kaggle/`. For example, on Linux it would be `/home/username/.kaggle/kaggle.json`.
-4. Go in the first cell of the notebook and edit the `current_dir` variable to point to the directory where you want to download the data and work on.
-   - If you have Google Drive installed and mounted, you can set it to a folder in your Google Drive.
-5. Run the notebook
+### Key Characteristics
+The dataset includes:
+* **Continuous Features (Joint Angles):** 31 features related to joint angles (e.g., `joint_00` - `joint_30`) measured over time.
+* **Static Attributes (Patient Characteristics):** categorical attributes describing patient characteristics (e.g., `n_legs`, `n_hands`, `n_eyes`) and pain survey results (`pain_survey_1` - `pain_survey_4`).
 
-### **If you are in Google Colab**
-1. **You still have to manually download the data from Kaggle and upload it to your Google Drive.**
-2. edit the boolean in the first cell `isColab` to `True` 
-3. the update `current_dir` variable in the first cell of the notebook to point to a folder in your Google Drive where you uploaded the data and want to work on.
+## Task
+Predict the true pain level of each subject (**no_pain**, **low_pain**, **high_pain**) based on their time-series motion data.
 
-### **If you are in Kaggle Notebooks**
-1. to import the dataset:
-   1. Download the dataset
-   2. create a public dataset in your profile
-   3. upload the pirate pain dataset
-2. From the notebook:
-   1. in the first cell change 'isKaggle' to True
-   2. add dataset to env by clicking "Add input"
+## Main Challenge: Class Imbalance
+A primary challenge was the **severe class disparity** across the three labels. The following strategies were adopted to mitigate this risk:
+* **Stratified Cross-Validation:** to maintain consistent class ratios in each split.
+* **Weighted Cross-Entropy Loss:** by assigning higher penalty weights to the rare classes (**low pain** and **high pain**) to ensure the model prioritized learning the clinically critical minority samples.
 
----
-# **Relevant Notes**
+## The Model: Bidirectional LSTM
+The best-performing final model is a **Bidirectional Long Short-Term Memory (LSTM)**, optimized for processing temporal sequences.
 
-- After importing the data, all data gets converted to a less memory intensive data type where possible.
-For example, integers that fit into int8 will be converted to that type.
-- there are no missing values
-- some features may be useless:
-  - joint_13 to joint_25 are all pretty much all zeros
-  - joint_30 is constant to 0.5
-  - **i have removed them for now, but it might not be the best course of action**
+### Optimal Final Configuration
+* **Architecture:** Bidirectional LSTM.
+* **HIDDEN LAYERS:** 2.
+* **HIDDEN SIZE:** 128.
+* **Optimizer:** AdamW from PyTorch.
+* **Loss Function:** CrossEntropyLoss with manually rescaled class weights and label smoothing.
+* **Additional Techniques:** Gradient Clipping was incorporated.
 
----
-# **Ideas for further experiments:**
-- do a loop of grid searches but each time reduce the intervals around the best hyperparameters found in the previous search
-- put `WINDOW_SIZE = 160` since there are 160 samples for each second of data
-- instead of removing the useless features, try to do a PCA or some sort of embedding to reduce the dimensionality of the input data
-- **stratified** k-fold cross validation to keep the same distribution of classes in each fold
+### Pre-processing and Feature Engineering
+* **Initial Cleaning:** removal of constant features and highly correlated variables to reduce redundancy, based on the **Correlation Matrix**. 
+* **Categorical Features:** string values (`n_legs`, `n_hands`, `n_eyes`) were mapped to integer indices and processed through custom embedding vectors to allow the model to autonomously learn meaningful representations.
+* **Temporal Normalization:** the `timestamp` column was normalized to the range [0, 1].
+* **Data Normalization:** application of the scikit-learn **StandardScaler** object, fitted only on the train set to prevent data leakage.
 
----
-# **Create a new notebook for each Network**
-To keep things organized, create a new notebook for each experiment you want to run.
-You can copy the content of the main notebook and modify it as needed.
-Make sure to change the name of the notebook to reflect the experiment you are running.
+### Explored and Discarded Techniques
+Several strategies did not yield the expected improvements:
+* **Principal Component Analysis (PCA):** applying PCA offered no improvement in performance.
+* **1D Convolutional Layers:** it did not improve the F1 score.
+* **Attention Layer:** implementing a standard Attention mechanism did not provide a measurable benefit.
+* **Outlier Filtering:** offered no significant performance gain.
 
----
-# **Suggestions by the profs**
-### ADVICE 07/11
-“A name, a number it is not. Upon a map, its true position find it must.”
+## Results
+- Public Score: 0.94044
+- Private Score: 0.94532"
 
-The model believes 'Monday' (label '0') is closer to 'Tuesday' (label '1'). But how close is 'Sunday' (label '6')? An error, this is. The Embedding layer, an atlas it creates. Not a straight line, but a dense space. It teaches the model where 'Monday' truly resides, and how close to 'Holiday' or 'Saturday' it stands.
-
-#### Gemini's response:
-Il suggerimento del professore indica che trattare le etichette categoriche come semplici numeri sequenziali (ad esempio, `no_pain=0`, `low_pain=1`, `high_pain=2`) è problematico. Il modello interpreterà la "distanza" tra 0 e 1 come uguale a quella tra 1 e 2, imponendo una relazione lineare che potrebbe non esistere.
-La frase "The Embedding layer, an atlas it creates" è la soluzione proposta. Un layer di embedding (nn.Embedding in PyTorch) apprende una rappresentazione vettoriale densa (un "vettore di embedding") per ogni categoria. Invece di un singolo numero, ogni categoria viene mappata su un vettore in uno spazio multidimensionale. In questo spazio, il modello può apprendere relazioni complesse e non lineari tra le categorie (ad esempio, quali categorie sono "vicine" o "lontane" in base al contesto dei dati).
-Nel tuo caso, il suggerimento si applica alle feature categoriche che stai usando come input per la RNN, come `n_legs`, `n_hands`, `n_eyes` e i `pain_survey`. Attualmente, le stai normalizzando come se fossero valori continui.
-Per implementare questo consiglio, dovresti:
-Separare le feature categoriche da quelle continue.
-Creare un layer `nn.Embedding` per ogni feature categorica.
-Nel metodo `forward` del tuo modello, passare i valori delle feature categoriche attraverso i rispettivi layer di embedding.
-Concatenare i vettori di embedding risultanti con le feature continue.
-Passare questo tensore combinato al tuo layer RNN.
-
-**Solution already implemented**
-
-### ADVICE 08/11 - Class Imbalance
-“Many the healthy, few the sick. If only to the many you listen, the faint whisper of truth never shall you hear.”
-
-Your model, the easy path it chooses: to always predict the common class. Accuracy, an illusion it becomes. Weigh your loss! Give more power to the rare voices. Ensure an error on the 'few' matters more than an error on the 'many'. Only then, the rare class to find will you learn.
-
-#### Gemini's response:
-Questo suggerimento affronta il problema dei dataset sbilanciati, dove alcune classi sono molto più frequenti di altre. Un modello potrebbe ottenere un'elevata accuratezza prevedendo sempre la classe maggioritaria, ignorando però completamente le classi meno frequenti (le "voci rare").
-La soluzione proposta, "Pesa la tua loss!" (Weigh your loss!), consiste nell'utilizzare una funzione di perdita pesata. Questa tecnica assegna una penalità maggiore agli errori di classificazione sulle classi minoritarie. In questo modo, il modello è costretto a prestare maggiore attenzione a queste classi, migliorando le sue capacità predittive complessive.
-Hai già implementato correttamente questa tecnica nel tuo notebook. Il codice seguente calcola i pesi per ciascuna classe in base alla loro frequenza e li passa alla funzione di perdita `CrossEntropyLoss`.
-```python
-# Calculate class weights for imbalanced dataset
-class_counts = np.bincount(y_train)
-total_samples = len(y_train)
-class_weights = total_samples / (len(np.unique(y_train)) * class_counts)
-class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
-
-# Set up loss function and optimizer with class weights
-criterion = nn.CrossEntropyLoss(weight=class_weights)
-```
-**Solution already implemented**
-
-### ADVICE 09/11 - Label Smoothing
-“Absolute truth, fragile it is. In blind certainty, the arrogance of overfitting lies hidden.”
-
-Your model, a perfect '1.0' chase it must not. This, rigidity it teaches. If the master says "perhaps 0.9, but 0.1 of doubt," the student (the model) to explore is forced. In this whisper of uncertainty, a stronger generalisation find, you can.
-#### Gemini's response:
-Il suggerimento del professore, "Absolute truth, fragile it is. In blind certainty, the arrogance of overfitting lies hidden", si riferisce a una tecnica di regolarizzazione chiamata Label Smoothing.
-Analisi del Suggerimento
-"Il tuo modello non deve inseguire un perfetto '1.0'": Quando addestri un modello di classificazione, di solito usi etichette "hard" (one-hot encoded). Ad esempio, per la classe `low_pain` (etichetta 1 su 3 classi), il target è `[0, 1, 0]`. Il modello viene spinto a produrre una probabilità di 1.0 per la classe corretta e 0.0 per le altre. Questa "eccessiva sicurezza" (`blind certainty`) può portare all'overfitting, rendendo il modello rigido e meno capace di generalizzare su dati nuovi.
-"Se il maestro dice 'forse 0.9, ma 0.1 di dubbio'...": Questa è la soluzione. Invece di usare un target "duro" come `[0, 1, 0]`, il Label Smoothing lo trasforma in un target "morbido". Ad esempio, con un fattore di smoothing di 0.1, il nuovo target potrebbe diventare `[0.05, 0.9, 0.05]`. La classe corretta ha ancora la probabilità più alta (0.9), ma una piccola parte della probabilità (0.1) viene distribuita uniformemente tra tutte le classi (incluse quella corretta).
-Questo costringe il modello a essere meno sicuro delle proprie previsioni, riducendo la tendenza a memorizzare il training set e migliorando la generalizzazione.
-
-```python
-# Set up loss function and optimizer with class weights and label smoothing
-# Un valore comune per label_smoothing è 0.1
-criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
-```
-**Solution already implemented**
-
-### ADVICE 10/11 - Gradient Clipping
-“A step too great, from the precipice fall it makes you. The gradient, tamed it must be.”
-
-In the valleys of RNNs, the exploding gradient a sudden foe it is. A single unstable step, and your training into NaN (chaos) collapses. 'Clipping', a bridle on this wild horse it places. Not the direction, but the magnitude it controls. To learn with constancy, with control advance you must.
-
-#### Gemini's response:
-
-Il suggerimento del professore è estremamente pertinente e utile per il tuo progetto. Sta parlando di un problema comune nell'addestramento delle Reti Neurali Ricorrenti (RNN) chiamato "exploding gradients" (gradiente che esplode) e della sua soluzione, il "gradient clipping".
-Spiegazione
-Problema: Exploding Gradients Durante l'addestramento di una RNN, i gradienti calcolati per aggiornare i pesi della rete possono diventare estremamente grandi. Questo fenomeno, noto come "exploding gradient", porta a un aggiornamento dei pesi sproporzionato, rendendo l'addestramento instabile. La funzione di costo può oscillare violentemente o diventare NaN (Not a Number), come menzionato dal professore, facendo fallire l'intero processo.
-Soluzione: Gradient Clipping Il "gradient clipping" è una tecnica che risolve questo problema. Impone un valore massimo (una soglia) per la norma (magnitudine) dei gradienti. Se, durante la backpropagation, la norma del gradiente di un parametro supera questa soglia, il gradiente viene riscalato per riportare la sua norma al valore massimo consentito.
-Come dice il professore, "Non la direzione, ma la magnitudine esso controlla". Questo è un punto cruciale: la tecnica non altera la direzione dell'aggiornamento, ma ne limita l'entità, prevenendo passi troppo grandi e stabilizzando l'apprendimento.
-
-**Solution already implemented**
-
-### ADVICE 11/11 - Autocorrelation x Windowing
-“Its own echo, the series sings. In the rhythm of this echo, the true window lies.”
-
-By instinct, your window you choose. 30 steps? 50? A blind number, it is. But the data, their own memory show you. Autocorrelation, a mirror to the past it is. Look at its plot. Where does the past most resemble the present? At 12 steps? At 24? These peaks, the natural cycles they are. If the echo fades after 15 steps, why force your LSTM to remember 100? Listen to the data. It tells you how far back, it is worth looking.
-
-#### Gemini's response:
-Sì, il consiglio del professore è estremamente pertinente e applicabile al vostro progetto. Anzi, è uno dei suggerimenti più importanti per ottimizzare un modello basato su serie temporali come il vostro.
-Spiegazione
-Attualmente, nel vostro codice (hyperparameters_tuning_cross_validation.ipynb), avete impostato una WINDOW_SIZE fissa a 100. Come dice il professore, questo è un "numero cieco", scelto istintivamente.
-Il consiglio suggerisce un approccio più scientifico:
-Analizzare l'Autocorrelazione: L'autocorrelazione misura quanto un punto in una serie temporale sia simile a un punto precedente (un "lag" o ritardo). Analizzando l'autocorrelazione per diversi ritardi, potete scoprire i "cicli naturali" o la "memoria" intrinseca dei vostri dati.
-Scegliere la window_size: Se il grafico dell'autocorrelazione mostra che la correlazione cala significativamente dopo, ad esempio, 25 passi, significa che i dati più vecchi di 25 passi hanno poca influenza su quelli attuali. Una window_size molto più grande (come 100) potrebbe costringere il modello a imparare da dati rumorosi o irrilevanti, peggiorando le performance o aumentando inutilmente la complessità. I picchi nel grafico, invece, suggeriscono le lunghezze di finestra ottimali.
-
-### ADVICE 12/11 - Time Feature Engineering
-“Not only what happens, but when. Time, not just an index, but a feature it is.”
-
-Your signal, bare it is. But the 'when', rich context it gives. Is it the hour of the day? The day of the week? The start of the month? These are not numbers, but cycles. Transform this 'hour' into a feature. And if it is a category ('Monday'), in the embedding space, its true meaning let it learn.
-
-
-
-### ADVICE 13/11 - 1D Convolutions
-“A pattern in time, like a pattern in space it is. With a new eye, look you must.”
-
-The Conv2D upon images observes; the Conv1D across sequences scans. The same rules of kernel, padding, and stride, they obey. How might this eye for local patterns, your recurrent network assist? Before the RNN's memory processes the past, the CNN can find the shape.
-
-#### Ai's response:
-
-Il professore sta suggerendo di aggiungere layer di Convoluzione 1D PRIMA del vostro layer ricorrente (RNN/LSTM/GRU). Questo è assolutamente applicabile e molto pertinente al vostro progetto!
-🎯 Concetto chiave
-Analogia con le immagini:
-* Conv2D sulle immagini: identifica pattern locali spaziali (bordi, texture, forme) scorando un kernel 2D su altezza e larghezza
-* Conv1D sulle serie temporali: identifica pattern locali temporali (picchi, trend, oscillazioni) scorrendo un kernel 1D lungo la dimensione temporale
-Nel vostro caso specifico:
-Attualmente il vostro modello funziona così:
-```
-Input Features → Embeddings → RNN/LSTM/GRU → Classifier
-```
-Il professore suggerisce:
-```
-Input Features → Embeddings → Conv1D → RNN/LSTM/GRU → Classifier
-                                 ↑
-                    "Before the RNN's memory processes the past,
-                     the CNN can find the shape"
-```
-
-Perché è utile nel vostro progetto?
-1. Estrazione di pattern locali
-I vostri dati sono sensori corporei (joint_1, joint_2, ecc.) campionati nel tempo. La Conv1D può:
-Identificare micro-pattern: piccole sequenze di movimenti che indicano dolore
-Rilevare transizioni: cambiamenti bruschi nei valori dei sensori
-Trovare correlazioni temporali locali: ad esempio, se joint_5 e joint_7 hanno un pattern sincronizzato nei successivi 3-5 timestep
-2. Riduzione della complessità per la RNN
-La Conv1D "pre-processa" i dati estraendo feature più informative
-La RNN riceve input già "filtrati" e più ricchi semanticamente
-Questo permette alla RNN di concentrarsi sulle dipendenze a lungo termine invece che sui dettagli locali
-3. Riduzione dimensionale temporale (opzionale)
-Con stride > 1 o pooling, potete:
-Ridurre la lunghezza della sequenza (es. da 100 a 50 timestep)
-Accelerare il training
-Ridurre il rischio di vanishing gradient
-
-
-### ADVICE 14/11 - Attention
-“Not all steps in time, equal weight do they carry. What is important, the model must learn to see.”
-
-Your LSTM, long memory it has. But does it remember the vital first step, when it reaches the last? Attention, a torch in the long corridor of time it is. It teaches the network where to look. It gives more weight to the critical moments. In this focus, great power find you can.
-
-#### Breve spiegazione dell'Attention Layer (contestualizzata al progetto)
-
-Nel nostro progetto usiamo sequenze temporali di lunghezza fissata (finestre di joint nel tempo) e un modello ricorrente (LSTM/GRU) per classificare il livello di dolore del pirata. In un LSTM "puro" l'informazione di ogni istante viene compressa in un unico vettore finale: questo può far perdere di importanza alcuni momenti chiave della sequenza.
-
-L'**attention layer** risolve proprio questo problema: invece di considerare tutti i timestep allo stesso modo, impara a pesare diversamente i vari istanti. In pratica:
-- prende tutti gli hidden state della RNN (`rnn_out`, uno per ogni timestep),
-- calcola quanto ogni timestep è "rilevante" per la decisione finale,
-- costruisce una rappresentazione aggregata che dà più peso ai momenti più informativi (ad esempio brusche variazioni nei joint).
-
-Nel contesto del Pirate Pain Challenge questo è utile perché:
-- non tutti i frame della camminata del pirata sono ugualmente informativi sul dolore percepito,
-- l'attenzione permette al modello di concentrarsi sulle fasi del movimento dove il pattern dei joint suggerisce più chiaramente una condizione di **no_pain / low_pain / high_pain**,
-- rispetto a usare solo l'ultimo hidden state dell'LSTM, l'attenzione sfrutta in modo più ricco tutta la sequenza.
-
-Per questo motivo abbiamo introdotto nel modello un flag `use_attention` che ci permette di confrontare in modo controllato le prestazioni del modello **con** e **senza** attention, mantenendo invariata l'architettura di base.
+## Team
+- *[Carmen Giaccotto](https://github.com/carmengiaccotto)*
+- *[Simone Pio Bottaro](https://github.com/SimonePioBottaro)*
+- *[Davide Bertoni](https://github.com/Bert0ns)*
+- *[Francesco Lauria](https://github.com/FRANCESC0LAUR1A)*
